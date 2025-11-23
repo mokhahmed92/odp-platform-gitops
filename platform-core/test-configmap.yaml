@@ -1,0 +1,15 @@
+# Test ConfigMap to verify ArgoCD auto-sync
+# This file tests that ArgoCD detects changes and syncs resources
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: platform-core-test
+  namespace: odp-platform
+  labels:
+    app.kubernetes.io/name: test
+    app.kubernetes.io/part-of: odp-platform
+data:
+  message: "Hello from ArgoCD auto-sync!"
+  sync-test: "true"
+  timestamp: "2025-11-23T18:42:00Z"

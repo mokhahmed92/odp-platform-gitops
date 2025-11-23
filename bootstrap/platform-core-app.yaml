@@ -17,6 +17,8 @@ spec:
   project: default
 
   # Source: GitOps repository
+  # NOTE: For production use, push this repository to GitHub at:
+  # https://github.com/mokhahmed92/odp-platform-gitops
   source:
     repoURL: https://github.com/mokhahmed92/odp-platform-gitops
     targetRevision: main
