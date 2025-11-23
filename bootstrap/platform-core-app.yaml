@@ -1,0 +1,58 @@
+# ArgoCD Application for Platform Core Components
+# Story 1.2: Create Platform-Core ArgoCD Application
+# Manages: Spark Operator, Volcano, Airflow (deployed in Epic 3-4)
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-core
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: platform-core
+    app.kubernetes.io/part-of: odp-platform
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"  # Deploy after namespaces (wave 1)
+spec:
+  # Project reference (default for now, custom projects in Epic 2)
+  project: default
+
+  # Source: GitOps repository
+  source:
+    repoURL: https://github.com/mokhahmed92/odp-platform-gitops
+    targetRevision: main
+    path: platform-core
+    
+    # Directory-level settings (applies to all Helm charts in platform-core/)
+    directory:
+      recurse: true  # Process subdirectories
+      
+  # Destination: Kubernetes cluster and namespace
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: odp-platform
+
+  # Sync Policy: Automated with prune and selfHeal
+  syncPolicy:
+    automated:
+      prune: true      # Delete resources not in Git
+      selfHeal: true   # Revert manual changes back to Git state
+      allowEmpty: true # Allow syncing when directory is empty
+    
+    syncOptions:
+      - CreateNamespace=true  # Auto-create odp-platform namespace
+      - PrunePropagationPolicy=foreground  # Delete dependents before owner
+      - PruneLast=true  # Prune after all resources synced (safer)
+      
+    retry:
+      limit: 5  # Retry failed syncs up to 5 times
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Ignore specific differences (prevent unnecessary syncs)
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas  # Ignore replica count changes (HPA may modify)
