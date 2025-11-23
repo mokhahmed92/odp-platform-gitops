@@ -23,7 +23,13 @@ spec:
     repoURL: https://github.com/mokhahmed92/odp-platform-gitops
     targetRevision: main
     path: platform-core
-    
+
+    # Helm configuration (Story 1.3: Environment-specific value merging)
+    helm:
+      valueFiles:
+        - values-base.yaml      # Common defaults across all environments
+        - values-prod.yaml      # Production overrides (change based on target environment)
+
     # Directory-level settings (applies to all Helm charts in platform-core/)
     directory:
       recurse: true  # Process subdirectories
