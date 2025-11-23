@@ -1,0 +1,68 @@
+# App of Apps Pattern - Infrastructure Applications
+# Enhancement: Manage all infrastructure Applications from a single parent Application
+# This Application watches the bootstrap/ directory and auto-creates child Applications
+#
+# Usage:
+#   kubectl apply -f bootstrap/infra-apps.yaml
+#
+# This will automatically create and manage:
+#   - namespaces Application (sync wave 1)
+#   - platform-core Application (sync wave 2)
+#   - observability Application (sync wave 3)
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infra-apps
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: infra-apps
+    app.kubernetes.io/part-of: odp-platform
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"  # Deploy first (creates child Applications)
+spec:
+  # Project reference
+  project: default
+
+  # Source: Bootstrap directory containing Application manifests
+  source:
+    repoURL: https://github.com/mokhahmed92/odp-platform-gitops
+    targetRevision: main
+    path: bootstrap
+
+    # Directory-level settings
+    directory:
+      recurse: false  # Don't recurse into subdirectories
+      include: '*-app.yaml'  # Only include Application manifests
+      exclude: 'infra-apps.yaml'  # Don't include self (would create loop)
+
+  # Destination: ArgoCD namespace (Applications are cluster-scoped)
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  # Sync Policy: Automated management of child Applications
+  syncPolicy:
+    automated:
+      prune: true      # Remove Applications that are deleted from Git
+      selfHeal: true   # Auto-sync changes to child Application manifests
+      allowEmpty: true # Allow syncing when directory is empty
+
+    syncOptions:
+      # Respect sync waves defined in child Applications
+      - RespectIgnoreDifferences=true
+
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Ignore differences in Application status (managed by child Applications)
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: Application
+      jsonPointers:
+        - /status
+        - /operation
