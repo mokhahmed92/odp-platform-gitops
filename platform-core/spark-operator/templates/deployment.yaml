@@ -18,8 +18,10 @@ spec:
       app.kubernetes.io/name: {{ .Chart.Name }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
       annotations:
-        {{- toYaml .Values.podAnnotations | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
         app.kubernetes.io/name: {{ .Chart.Name }}
     spec:
