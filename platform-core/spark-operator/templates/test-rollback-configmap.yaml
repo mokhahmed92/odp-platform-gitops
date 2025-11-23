@@ -1,0 +1,21 @@
+# Test ConfigMap for Rollback Testing (Story 1.5)
+# This ConfigMap is used to validate the Git revert rollback workflow
+# Test scenario: Deploy v1 → Deploy v2-broken → Revert to v1
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-rollback-config
+  namespace: odp-platform
+  labels:
+    app.kubernetes.io/name: test-rollback
+    app.kubernetes.io/part-of: odp-platform
+    test-purpose: rollback-validation
+  annotations:
+    story: "1.5-implement-infrastructure-rollback-via-git-revert"
+    test-phase: "v1-initial-deployment"
+data:
+  version: "v1"
+  status: "healthy"
+  deployment-phase: "initial"
+  description: "Initial version for rollback testing - this version is stable"
