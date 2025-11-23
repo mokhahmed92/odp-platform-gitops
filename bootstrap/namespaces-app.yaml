@@ -1,0 +1,62 @@
+# ArgoCD Application for Multi-Tenant Namespace Definitions
+# Story 1.6: Create ArgoCD Applications for Observability and Namespaces
+# Manages: Namespace resources, ResourceQuotas, NetworkPolicies, RBAC (deployed in Epic 2)
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: namespaces
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: namespaces
+    app.kubernetes.io/part-of: odp-platform
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"  # Deploy first (foundation for other applications)
+spec:
+  # Project reference (default for now, custom projects in Epic 2)
+  project: default
+
+  # Source: GitOps repository
+  source:
+    repoURL: https://github.com/mokhahmed92/odp-platform-gitops
+    targetRevision: main
+    path: namespaces
+
+    # Directory-level settings
+    directory:
+      recurse: true  # Process subdirectories (domain-finance/, domain-marketing/, etc.)
+
+  # Destination: Kubernetes cluster
+  # Note: Namespaces are cluster-scoped resources, but ArgoCD requires a namespace
+  # Using 'default' as placeholder since resources will be created cluster-wide
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default  # Placeholder (Namespace resources ignore this)
+
+  # Sync Policy: Automated with prune and selfHeal
+  syncPolicy:
+    automated:
+      prune: true      # Delete namespaces removed from Git
+      selfHeal: true   # Revert manual namespace changes back to Git state
+      allowEmpty: true # Allow syncing when directory is empty (pre-Epic 2)
+
+    syncOptions:
+      - PrunePropagationPolicy=foreground  # Delete all resources in namespace before deleting namespace
+      - PruneLast=true  # Prune after all resources synced
+      # NOTE: CreateNamespace not needed - this Application creates Namespace resources
+
+    retry:
+      limit: 5  # Retry failed syncs up to 5 times
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Ignore specific differences
+  ignoreDifferences:
+    # Ignore status fields on Namespace resources (read-only, managed by Kubernetes)
+    - group: ""
+      kind: Namespace
+      jsonPointers:
+        - /status
+        - /metadata/annotations/kubectl.kubernetes.io~1last-applied-configuration
