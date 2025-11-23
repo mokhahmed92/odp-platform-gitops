@@ -1,0 +1,68 @@
+# yamllint configuration
+# Story 1.4: Implement GitOps Pull Request Approval Workflow
+#
+# This configuration defines YAML linting rules for the GitOps repository.
+# Used by CI pipeline to validate YAML syntax and style.
+
+extends: default
+
+rules:
+  # Line length - allow longer lines for Kubernetes manifests
+  line-length:
+    max: 120
+    level: warning
+
+  # Indentation - 2 spaces (Kubernetes standard)
+  indentation:
+    spaces: 2
+    indent-sequences: true
+
+  # Document start (---) - not required for all files
+  document-start:
+    present: false
+
+  # Comments - allow comments to start without space after #
+  comments:
+    min-spaces-from-content: 1
+    require-starting-space: true
+
+  # Truthy values - allow yes/no/on/off in addition to true/false
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+    check-keys: false
+
+  # Empty values - allow null and empty strings
+  empty-values:
+    forbid-in-block-mappings: false
+    forbid-in-flow-mappings: false
+
+  # Key duplicates - strict enforcement
+  key-duplicates:
+    forbid-duplicated-merge-keys: true
+
+  # Brackets - flexible spacing
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Braces - flexible spacing for Helm templates
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Colons - standard Kubernetes spacing
+  colons:
+    max-spaces-before: 0
+    max-spaces-after: 1
+
+  # Hyphens - standard list formatting
+  hyphens:
+    max-spaces-after: 1
+
+# Ignore patterns
+ignore: |
+  .git/
+  .github/
+  **/*.md
+  **/charts/
+  **/Chart.lock

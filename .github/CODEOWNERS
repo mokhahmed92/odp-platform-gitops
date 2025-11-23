@@ -1,0 +1,40 @@
+# CODEOWNERS - GitOps Repository Ownership
+# Story 1.4: Implement GitOps Pull Request Approval Workflow
+#
+# This file defines code ownership for automatic review assignment.
+# When a PR is created, GitHub automatically assigns reviewers based on these rules.
+#
+# Syntax: <path-pattern> <owner1> <owner2> ...
+# Multiple owners can be specified (at least one approval required)
+
+# Global ownership - platform team owns all infrastructure
+* @mokhahmed92
+
+# Platform core components (Spark, Volcano, Airflow)
+# Requires platform team approval for any changes
+/platform-core/ @mokhahmed92
+
+# Bootstrap resources (ArgoCD installation and configuration)
+# Critical infrastructure - requires senior platform engineer approval
+/bootstrap/ @mokhahmed92
+
+# Observability components (Splunk, New Relic)
+# Requires platform team and observability team approval
+/observability/ @mokhahmed92
+
+# Multi-tenant namespace definitions
+# Requires platform team and security review
+/namespaces/ @mokhahmed92
+
+# CI/CD workflows - require DevOps approval
+/.github/workflows/ @mokhahmed92
+
+# Documentation - requires technical writer review (optional)
+/docs/ @mokhahmed92
+
+# Production Note:
+# Replace @mokhahmed92 with appropriate team handles when deploying:
+# - @platform-team (for general platform changes)
+# - @senior-platform-engineers (for bootstrap changes)
+# - @observability-team (for monitoring/logging)
+# - @security-team (for namespace isolation and RBAC)

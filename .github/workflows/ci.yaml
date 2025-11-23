@@ -1,0 +1,158 @@
+# GitOps CI/CD Workflow
+# Story 1.4: Implement GitOps Pull Request Approval Workflow
+# Validates infrastructure changes before merge
+
+name: GitOps CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'platform-core/**'
+      - 'observability/**'
+      - 'namespaces/**'
+      - 'bootstrap/**'
+
+jobs:
+  helm-lint:
+    name: Helm Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.13.0'
+
+      - name: Lint Helm charts in platform-core
+        run: |
+          echo "Linting Helm charts in platform-core/"
+          for chart_dir in platform-core/*/; do
+            if [ -f "${chart_dir}Chart.yaml" ]; then
+              echo "Linting chart: ${chart_dir}"
+              helm lint "${chart_dir}" \
+                -f "${chart_dir}values-base.yaml" \
+                -f "${chart_dir}values-dev.yaml" || exit 1
+            fi
+          done
+
+      - name: Lint Helm charts in observability
+        run: |
+          echo "Linting Helm charts in observability/"
+          for chart_dir in observability/*/; do
+            if [ -f "${chart_dir}Chart.yaml" ]; then
+              echo "Linting chart: ${chart_dir}"
+              helm lint "${chart_dir}" || exit 1
+            fi
+          done
+        continue-on-error: true  # Observability not populated yet
+
+  yaml-validation:
+    name: YAML Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Validate YAML syntax
+        run: |
+          yamllint -c .yamllint.yaml \
+            platform-core/ \
+            observability/ \
+            namespaces/ \
+            bootstrap/ \
+            .github/
+
+  kubectl-dry-run:
+    name: Kubernetes Manifest Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.28.0'
+
+      - name: Setup kind cluster for validation
+        uses: helm/kind-action@v1
+        with:
+          version: v0.20.0
+          cluster_name: validation-cluster
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.13.0'
+
+      - name: Validate Kubernetes manifests with dry-run
+        run: |
+          echo "Validating Kubernetes manifests..."
+
+          # Validate ArgoCD Application manifests
+          for app_manifest in bootstrap/*.yaml; do
+            if [ -f "$app_manifest" ]; then
+              echo "Validating: $app_manifest"
+              kubectl apply --dry-run=client -f "$app_manifest" || exit 1
+            fi
+          done
+
+          # Render and validate Helm charts
+          for chart_dir in platform-core/*/; do
+            if [ -f "${chart_dir}Chart.yaml" ]; then
+              echo "Rendering and validating chart: ${chart_dir}"
+              helm template test "${chart_dir}" \
+                -f "${chart_dir}values-base.yaml" \
+                -f "${chart_dir}values-dev.yaml" | \
+                kubectl apply --dry-run=client -f - || exit 1
+            fi
+          done
+
+  argocd-diff:
+    name: ArgoCD Diff Preview
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/download/v2.9.3/argocd-linux-amd64
+          chmod +x argocd
+          sudo mv argocd /usr/local/bin/
+
+      - name: Preview ArgoCD changes
+        run: |
+          echo "ArgoCD diff preview will be available when connected to cluster"
+          echo "For production use, configure ArgoCD server URL and credentials"
+          echo "Command: argocd app diff platform-core --local platform-core/"
+        continue-on-error: true  # Cannot connect without cluster access
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy security scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true  # Don't fail if GitHub Security not available
