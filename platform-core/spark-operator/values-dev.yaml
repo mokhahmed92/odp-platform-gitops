@@ -1,0 +1,49 @@
+# Development Environment Overrides
+# Story 1.3: Helm Base + Environment Overlay Pattern
+# These values override values-base.yaml for dev environment
+
+# Single replica for dev (lower cost)
+replicaCount: 1
+
+# Reduced resources for dev environment
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+# Debug logging for development
+logging:
+  level: debug
+  format: json
+
+# Development-specific annotations
+podAnnotations:
+  environment: development
+  cost-center: dev-infra
+
+# No persistence in dev (use emptyDir)
+persistence:
+  enabled: false
+
+# Spark operator dev configuration
+sparkOperator:
+  # Watch only dev namespace
+  watchNamespace: "spark-dev"
+  
+  # Metrics enabled for troubleshooting
+  enableMetrics: true
+
+# Tolerations for dev nodes (if using spot instances)
+tolerations:
+  - key: "workload-type"
+    operator: "Equal"
+    value: "dev"
+    effect: "NoSchedule"
+
+# Node selector for dev nodepool
+nodeSelector:
+  environment: dev
+  workload: data-processing

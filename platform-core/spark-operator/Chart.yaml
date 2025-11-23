@@ -1,0 +1,19 @@
+# Helm Chart for Spark Operator (Example)
+# Story 1.3: Implement Helm Base + Environment Overlay Pattern
+# This is a placeholder chart demonstrating the overlay pattern
+# Actual Spark Operator deployment happens in Epic 3, Story 3.1
+
+apiVersion: v2
+name: spark-operator
+description: Example Helm chart demonstrating base + environment overlay pattern for Kubeflow Spark Operator
+type: application
+version: 0.1.0
+appVersion: "1.0"
+keywords:
+  - spark
+  - operator
+  - kubernetes
+  - data-processing
+maintainers:
+  - name: ODP Platform Team
+    email: platform@example.com

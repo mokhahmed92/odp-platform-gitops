@@ -1,0 +1,83 @@
+# Base Values - Common defaults across all environments
+# Story 1.3: Helm Base + Environment Overlay Pattern
+# These values are shared by dev/staging/prod and overridden by environment-specific files
+
+# Image configuration
+image:
+  repository: gcr.io/spark-operator/spark-operator
+  pullPolicy: IfNotPresent
+  tag: "v1beta2-1.3.8-3.1.1"  # Kubeflow Spark Operator version
+
+# Replica configuration (default: single instance)
+replicaCount: 1
+
+# Resource limits and requests (conservative defaults)
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+# Spark operator configuration
+sparkOperator:
+  # Namespace to watch for SparkApplication resources
+  # Empty string means watch all namespaces
+  watchNamespace: ""
+  
+  # Enable metrics endpoint
+  enableMetrics: true
+  metricsPort: 10254
+  
+  # Webhook configuration
+  webhook:
+    enable: true
+    port: 8443
+
+# Logging configuration (default: info level)
+logging:
+  level: info
+  format: json
+
+# Service account
+serviceAccount:
+  create: true
+  name: "spark-operator"
+  annotations: {}
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+# Security context for containers
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Persistence (disabled by default)
+persistence:
+  enabled: false

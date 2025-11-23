@@ -1,0 +1,86 @@
+# Production Environment Overrides
+# Story 1.3: Helm Base + Environment Overlay Pattern
+# These values override values-base.yaml for production environment
+
+# High Availability: 2 replicas for production
+replicaCount: 2
+
+# Production-grade resources
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+# Info logging for production (no debug to reduce noise)
+logging:
+  level: info
+  format: json
+
+# Production annotations and labels
+podAnnotations:
+  environment: production
+  cost-center: platform-prod
+  backup: "true"
+  monitoring: "enabled"
+
+# Enable persistence with production storage class
+persistence:
+  enabled: true
+  storageClass: fast-ssd  # Premium storage for prod
+  size: 20Gi
+
+# Spark operator production configuration
+sparkOperator:
+  # Watch production namespace
+  watchNamespace: "spark-prod"
+  
+  # Metrics enabled for monitoring
+  enableMetrics: true
+
+# Health checks for production
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# Pod anti-affinity for HA (spread across nodes)
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - spark-operator
+          topologyKey: kubernetes.io/hostname
+
+# Node selector for production nodepool
+nodeSelector:
+  environment: production
+  workload: data-processing
+
+# Tolerations for production nodes
+tolerations:
+  - key: "workload-type"
+    operator: "Equal"
+    value: "production"
+    effect: "NoSchedule"

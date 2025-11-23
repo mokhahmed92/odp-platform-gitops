@@ -1,0 +1,44 @@
+# Staging Environment Overrides
+# Story 1.3: Helm Base + Environment Overlay Pattern
+# These values override values-base.yaml for staging environment
+
+# Single replica for staging (mirrors prod config but lower scale)
+replicaCount: 1
+
+# Medium resources for staging
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# Info logging for staging
+logging:
+  level: info
+  format: json
+
+# Staging-specific annotations
+podAnnotations:
+  environment: staging
+  cost-center: platform-staging
+
+# Enable persistence with smaller PVC
+persistence:
+  enabled: true
+  storageClass: standard
+  size: 5Gi
+
+# Spark operator staging configuration
+sparkOperator:
+  # Watch staging namespace
+  watchNamespace: "spark-staging"
+  
+  # Metrics enabled
+  enableMetrics: true
+
+# Node selector for staging nodepool
+nodeSelector:
+  environment: staging
+  workload: data-processing
