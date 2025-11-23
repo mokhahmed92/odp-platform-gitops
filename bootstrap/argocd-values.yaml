@@ -1,0 +1,102 @@
+# ArgoCD Helm Values - High Availability Configuration
+# Story 1.1: Bootstrap ArgoCD GitOps Engine
+# Date: 2025-11-23
+
+# Global configuration
+global:
+  domain: argocd.local  # Change to actual domain in production
+
+# ArgoCD Server - Web UI and API
+server:
+  replicas: 2  # HA configuration for fault tolerance
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# ArgoCD Repo Server - Git repository connector and Helm renderer
+repoServer:
+  replicas: 2  # HA configuration
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# ArgoCD Application Controller - Kubernetes reconciliation engine
+controller:
+  replicas: 2  # HA configuration
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+# Dex - OIDC connector (disabled for MVP, enabled in Story 2.4)
+dex:
+  enabled: false
+
+# Redis - Caching layer
+redis:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# Configs - Repository and application configuration
+configs:
+  # Repository credentials (can be added declaratively or via UI)
+  repositories:
+    # GitOps repository for ODP platform
+    odp-platform-gitops:
+      url: https://github.com/mokhahmed92/odp-platform-gitops
+      name: odp-platform-gitops
+      type: git
+
+  # Resource customizations for improved health checks
+  resource:
+    customizations: |
+      # Spark Operator custom resource health checks (Epic 3)
+      sparkapplications.sparkoperator.k8s.io:
+        health.lua: |
+          hs = {}
+          if obj.status ~= nil then
+            if obj.status.applicationState.state == "COMPLETED" then
+              hs.status = "Healthy"
+              hs.message = "Spark application completed successfully"
+              return hs
+            end
+            if obj.status.applicationState.state == "FAILED" then
+              hs.status = "Degraded"
+              hs.message = "Spark application failed"
+              return hs
+            end
+            if obj.status.applicationState.state == "RUNNING" then
+              hs.status = "Progressing"
+              hs.message = "Spark application is running"
+              return hs
+            end
+          end
+          hs.status = "Progressing"
+          hs.message = "Waiting for Spark application to start"
+          return hs
+
+# RBAC - Role-based access control (basic config, expanded in Story 2.4)
+rbac:
+  policy.default: role:readonly
+  scopes: '[email, groups]'
+
+# Notifications - Alerts configuration (integrated with Splunk in Epic 7)
+notifications:
+  enabled: false  # Enable in Epic 7 with Splunk integration
