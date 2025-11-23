@@ -13,9 +13,10 @@ metadata:
     test-purpose: rollback-validation
   annotations:
     story: "1.5-implement-infrastructure-rollback-via-git-revert"
-    test-phase: "v1-initial-deployment"
+    test-phase: "v2-broken-deployment"
 data:
-  version: "v1"
-  status: "healthy"
-  deployment-phase: "initial"
-  description: "Initial version for rollback testing - this version is stable"
+  version: "v2-broken"
+  status: "degraded"
+  deployment-phase: "failed"
+  description: "BROKEN VERSION - This deployment has critical issues and needs rollback"
+  error: "Simulated failure for rollback testing - DO NOT USE IN PRODUCTION"
