@@ -75,6 +75,36 @@ This repository is managed by the following ArgoCD Applications:
 
 ### Deploy Infrastructure
 
+#### Option 1: App of Apps Pattern (Recommended)
+
+Deploy all infrastructure Applications with a single command using the App of Apps pattern:
+
+```bash
+kubectl apply -f bootstrap/infra-apps.yaml
+```
+
+This creates the `infra-apps` Application which automatically manages all child Applications:
+- **namespaces** (sync wave 1) - Multi-tenant namespace definitions
+- **platform-core** (sync wave 2) - Core platform components
+- **observability** (sync wave 3) - Monitoring and logging
+
+Verify deployment:
+```bash
+kubectl get applications -n argocd
+```
+
+#### Option 2: Manual Application Deployment
+
+Deploy Applications individually:
+
+```bash
+kubectl apply -f bootstrap/namespaces-app.yaml
+kubectl apply -f bootstrap/platform-core-app.yaml
+kubectl apply -f bootstrap/observability-app.yaml
+```
+
+### Trigger Manual Sync
+
 All deployments happen automatically via ArgoCD. To manually trigger a sync:
 
 ```bash
