@@ -7,6 +7,6 @@ metadata:
     app: rollback-test
     purpose: validation
 data:
-  version: "v1"
-  description: "Initial version for rollback testing"
+  version: "v1-commitA"
+  description: "Commit A - First sequential change"
   test_status: "healthy"
