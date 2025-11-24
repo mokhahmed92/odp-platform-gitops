@@ -1,0 +1,89 @@
+# Admin Role - Full namespace access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{DOMAIN}}-admin
+  namespace: domain-{{DOMAIN}}
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+# Admin RoleBinding - Bind to AD/LDAP group
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{DOMAIN}}-admin-binding
+  namespace: domain-{{DOMAIN}}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{DOMAIN}}-admin
+subjects:
+- kind: Group
+  name: {{DOMAIN}}-admins
+  apiGroup: rbac.authorization.k8s.io
+---
+# Developer Role - Deploy pipelines
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{DOMAIN}}-developer
+  namespace: domain-{{DOMAIN}}
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps", "secrets", "persistentvolumeclaims"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets", "daemonsets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["sparkoperator.k8s.io"]
+  resources: ["sparkapplications", "scheduledsparkapplications"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["volcano.sh"]
+  resources: ["jobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# Developer RoleBinding - Bind to AD/LDAP group
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{DOMAIN}}-developer-binding
+  namespace: domain-{{DOMAIN}}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{DOMAIN}}-developer
+subjects:
+- kind: Group
+  name: {{DOMAIN}}-developers
+  apiGroup: rbac.authorization.k8s.io
+---
+# Viewer Role - Read-only access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{DOMAIN}}-viewer
+  namespace: domain-{{DOMAIN}}
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+---
+# Viewer RoleBinding - Bind to AD/LDAP group
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{DOMAIN}}-viewer-binding
+  namespace: domain-{{DOMAIN}}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{DOMAIN}}-viewer
+subjects:
+- kind: Group
+  name: {{DOMAIN}}-viewers
+  apiGroup: rbac.authorization.k8s.io

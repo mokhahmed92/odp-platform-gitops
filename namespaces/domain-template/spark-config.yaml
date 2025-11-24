@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{DOMAIN}}-spark-defaults
+  namespace: domain-{{DOMAIN}}
+  labels:
+    app.kubernetes.io/component: spark-config
+    odp.platform/tenant: {{DOMAIN}}
+data:
+  spark-defaults.conf: |
+    # Spark Configuration for domain-{{DOMAIN}}
+
+    # Executor Configuration
+    spark.executor.instances=2
+    spark.executor.cores=4
+    spark.executor.memory=8g
+    spark.executor.memoryOverhead=2g
+
+    # Driver Configuration
+    spark.driver.cores=2
+    spark.driver.memory=4g
+    spark.driver.memoryOverhead=1g
+
+    # Kubernetes Configuration
+    spark.kubernetes.namespace=domain-{{DOMAIN}}
+    spark.kubernetes.executor.deleteOnTermination=true
+
+    # Volcano Scheduler Integration
+    spark.kubernetes.scheduler.name=volcano
+    spark.kubernetes.scheduler.volcano.podGroupTemplateFile=/mnt/spark/podgroup-template.yaml
+
+    # Logging Configuration
+    spark.eventLog.enabled=true
+    spark.eventLog.dir=s3a://{{DOMAIN}}-spark-logs/
+
+    # S3/Cloudian Configuration
+    spark.hadoop.fs.s3a.endpoint=https://s3.cloudian.internal
+    spark.hadoop.fs.s3a.path.style.access=true
+    spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem
+
+    # Dynamic Allocation (optional - adjust per domain needs)
+    spark.dynamicAllocation.enabled=false
+    spark.dynamicAllocation.minExecutors=1
+    spark.dynamicAllocation.maxExecutors=10

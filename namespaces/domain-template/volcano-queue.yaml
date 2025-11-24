@@ -1,0 +1,10 @@
+apiVersion: scheduling.volcano.sh/v1beta1
+kind: Queue
+metadata:
+  name: {{DOMAIN}}-queue
+spec:
+  weight: 1
+  capability:
+    cpu: "200"       # 200 CPU cores (matches ResourceQuota)
+    memory: "800Gi"  # 800GB RAM (matches ResourceQuota)
+  reclaimable: true  # Allow borrowing unused resources from other queues
