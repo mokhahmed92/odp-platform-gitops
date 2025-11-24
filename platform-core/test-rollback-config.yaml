@@ -7,7 +7,6 @@ metadata:
     app: rollback-test
     purpose: validation
 data:
-  version: "v2-broken"
-  description: "Breaking change for rollback testing"
-  test_status: "degraded"
-  error: "Intentional failure to simulate production issue"
+  version: "v1"
+  description: "Initial version for rollback testing"
+  test_status: "healthy"
