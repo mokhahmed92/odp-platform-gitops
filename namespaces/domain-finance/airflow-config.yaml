@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: finance-airflow-config
+  namespace: domain-finance
+  labels:
+    app.kubernetes.io/component: airflow-config
+    odp.platform/tenant: finance
+data:
+  airflow.cfg: |
+    [core]
+    dags_folder = /opt/airflow/dags
+    executor = KubernetesExecutor
+    load_examples = False
+
+    [kubernetes]
+    namespace = domain-finance
+    worker_container_repository = apache/airflow
+    worker_container_tag = 2.7.3-python3.10
+    delete_worker_pods = True
+    delete_worker_pods_on_failure = False
+
+    [logging]
+    remote_logging = True
+    remote_base_log_folder = s3://finance-airflow-logs
+    remote_log_conn_id = s3_default
+
+    [webserver]
+    base_url = https://airflow-finance.odp.internal
+    web_server_port = 8080
+    rbac = True
+
+    [scheduler]
+    dag_dir_list_interval = 30
+    max_active_runs_per_dag = 3
+
+    [api]
+    auth_backend = airflow.api.auth.backend.basic_auth

@@ -1,0 +1,89 @@
+# Admin Role - Full namespace access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: finance-admin
+  namespace: domain-finance
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+# Admin RoleBinding - Bind to AD/LDAP group
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: finance-admin-binding
+  namespace: domain-finance
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: finance-admin
+subjects:
+- kind: Group
+  name: finance-admins
+  apiGroup: rbac.authorization.k8s.io
+---
+# Developer Role - Deploy pipelines
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: finance-developer
+  namespace: domain-finance
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps", "secrets", "persistentvolumeclaims"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets", "daemonsets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["sparkoperator.k8s.io"]
+  resources: ["sparkapplications", "scheduledsparkapplications"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["volcano.sh"]
+  resources: ["jobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# Developer RoleBinding - Bind to AD/LDAP group
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: finance-developer-binding
+  namespace: domain-finance
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: finance-developer
+subjects:
+- kind: Group
+  name: finance-developers
+  apiGroup: rbac.authorization.k8s.io
+---
+# Viewer Role - Read-only access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: finance-viewer
+  namespace: domain-finance
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+---
+# Viewer RoleBinding - Bind to AD/LDAP group
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: finance-viewer-binding
+  namespace: domain-finance
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: finance-viewer
+subjects:
+- kind: Group
+  name: finance-viewers
+  apiGroup: rbac.authorization.k8s.io
