@@ -7,7 +7,8 @@ metadata:
     app: rollback-test
     purpose: validation
 data:
-  version: "v2-commitB-BROKEN"
-  description: "Commit B - INTRODUCES BUG (middle commit)"
-  test_status: "degraded"
+  version: "v3-commitC"
+  description: "Commit C - Latest change (depends on B)"
+  test_status: "healthy"
   bug: "This is the problematic middle commit"
+  feature: "New feature added in commit C"
