@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-rollback-config
+  namespace: odp-platform
+  labels:
+    app: rollback-test
+    purpose: validation
+data:
+  version: "v1"
+  description: "Initial version for rollback testing"
+  test_status: "healthy"
