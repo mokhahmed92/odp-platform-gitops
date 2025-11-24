@@ -1,0 +1,89 @@
+# Admin Role - Full namespace access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: marketing-admin
+  namespace: domain-marketing
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+# Admin RoleBinding - Bind to AD/LDAP group
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: marketing-admin-binding
+  namespace: domain-marketing
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: marketing-admin
+subjects:
+- kind: Group
+  name: marketing-admins
+  apiGroup: rbac.authorization.k8s.io
+---
+# Developer Role - Deploy pipelines
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: marketing-developer
+  namespace: domain-marketing
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps", "secrets", "persistentvolumeclaims"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets", "daemonsets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["sparkoperator.k8s.io"]
+  resources: ["sparkapplications", "scheduledsparkapplications"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["volcano.sh"]
+  resources: ["jobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# Developer RoleBinding - Bind to AD/LDAP group
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: marketing-developer-binding
+  namespace: domain-marketing
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: marketing-developer
+subjects:
+- kind: Group
+  name: marketing-developers
+  apiGroup: rbac.authorization.k8s.io
+---
+# Viewer Role - Read-only access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: marketing-viewer
+  namespace: domain-marketing
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+---
+# Viewer RoleBinding - Bind to AD/LDAP group
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: marketing-viewer-binding
+  namespace: domain-marketing
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: marketing-viewer
+subjects:
+- kind: Group
+  name: marketing-viewers
+  apiGroup: rbac.authorization.k8s.io

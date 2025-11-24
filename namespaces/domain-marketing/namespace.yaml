@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: domain-marketing
+  labels:
+    app.kubernetes.io/part-of: odp-platform
+    odp.platform/tenant: marketing
+    odp.platform/isolation: strict

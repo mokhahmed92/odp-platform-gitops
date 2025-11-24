@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: marketing-quota
+  namespace: domain-marketing
+spec:
+  hard:
+    requests.cpu: "200"              # 200 CPU cores
+    requests.memory: "800Gi"         # 800GB RAM
+    limits.cpu: "400"                # Allow bursting to 400 cores
+    limits.memory: "1600Gi"          # Allow bursting to 1600GB
+    persistentvolumeclaims: "50"     # Max 50 PVCs
+    pods: "500"                      # Max 500 pods
